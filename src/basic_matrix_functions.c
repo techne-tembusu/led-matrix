@@ -11,7 +11,7 @@ char gen_piece(){ //generates random piece
   return pieces[random(7)];
 }
 
-void disp(char m[10][20], int row, int col){
+void disp(char m[20][10], int row, int col){
   for (int i=0; i<row; i++){
     for (int j=0; j<col; j++){
       Serial.print(m[i][j]);
@@ -23,43 +23,47 @@ void disp(char m[10][20], int row, int col){
 }
 
 void move_down(){ //every GAME_TIME the thing will move down
-  pass; 
+  return; 
 }
 
 void move_left(){
-  pass;
+  return;
 }
 
 void move_right(){
-  pass;
+  return;
 }
 
 void rotate(){
-  pass; //haha
+  return; //haha
 }
 
 void check_full_line(){
-  pass;
+  return;
 }
 
 void shift_down(){ //shift all tiles down after clearing line
-  pass;
+  return;
 }
 
 void clear_line(){
-  pass;
+  return;
 }
 
-int lower_x_coord(){
-  pass;
-}
-
-int lower_y_coord(){
-  pass;
-}
-
-void check_collision(){
-  pass;
+bool check_collision(char m[20][10], char color){
+  for (int i = 19; i>=0; i--){ //iteration from bottom-up to make check more efficient
+    for (int j = 0; j<10; j++){
+      if (m[i][j] == color){
+        if (i == 19){ //collides with bottom
+          return true;
+        }
+        else if(m[i+1][j] == 'w'){
+          return true; // collides with already dropped pieces
+        }
+      }
+    }
+  }
+  return false; //collided with nothing
 }
 
 void insert_piece(){ //temporarily have piece just magically appear in its entirely
@@ -67,14 +71,27 @@ void insert_piece(){ //temporarily have piece just magically appear in its entir
   pass;
 }
 
-void change_color(){ //after piece has fallen, color to be changed to white
-  pass;
+void change_color(char m[20][10], char color){ //after piece has fallen, color to be changed to white
+  int bottom = -1;
+  for (int i = 19; i=>0; i--){
+    if (i<bottom-4){ //early termination; pieces are at most 4 tiles in height
+      break;
+    }
+    for (int j = 0; j<10; j++){
+      if (m[i][j] == color){
+         m[i][j] = 'w';
+        if (bottom == -1){
+          bottom = i;
+        }
+      }
+    }
+  }
 }
 
 
 void loop() {
   // put your main code here, to run repeatedly:
-  char matrix[10][20]= {{'-','-','-','-','-','-','-','-','-','-'},
+  char matrix[20][10]= {{'-','-','-','-','-','-','-','-','-','-'},
                       {'-','-','-','-','-','-','-','-','-','-'},
                       {'-','-','-','-','-','-','-','-','-','-'},
                       {'-','-','-','-','-','-','-','-','-','-'},

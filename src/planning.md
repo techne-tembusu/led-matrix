@@ -1,3 +1,18 @@
+**26-02-19: New Implementation**
+
+Implementation (_a simpler one_):
+
+- Store the initial matrix
+- Have a separate 2d array for the falling piece 
+- Display function combines the both of them 
+- Keep track of location of falling piece (CurrentX, CurrentY)
+	- Update the initial matrix once the piece has collided/hit the ground
+	- check_full_lines
+		- if true, clear lines, push everything down, reupdate matrix, add to score
+		- else, proceed to insertion of next piece
+- rotate_collision_check & rotate needs to be hardcoded for each possibile orientation of each piece (takes in old matrix and new piece) (rotate uses rotate_collision_check to see wheren
+- insert_piece needs to be recoded
+
 **19-02-19: Coding Tetris**
 
 Notes:

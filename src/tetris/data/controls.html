@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en" style="height: 100%; border: 1px solid white;">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tembusu Tetris</title>
+
+    <style>
+        #rotate-bg {
+            display: flex;
+            justify-content: space-between;
+            width: 40%;
+            padding: 10px;
+            border-radius: 999px;
+            background: #BDBDBD;
+            transform: translate(5%, -50%) rotate(-45deg);
+        }
+
+        .rotate-btn {
+            border-radius: 50%;
+            width: 35%;
+            background-color: #F4F4F4;
+        }
+
+        #dpad-bg {
+            width: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .dpad-btn {
+            width: 100%;
+            background-color: #F4F4F4;
+        }
+
+        .dpad-btn-bg {
+            background-color: #BDBDBD !important;
+            padding: 10px;
+        }
+
+        .dpad-cell {
+            width: 33%;
+            background-color: #FFFFFF;
+        }
+
+        .dpad-row-bg {
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-start;
+            border-radius: 10px;
+        }
+
+        .svg {
+            height: 65%;
+            width: 65%;
+        }
+
+        #menu-container {
+            display: flex;
+            flex-direction: column;
+            align-self: center;
+            position: absolute;
+            bottom: 60%;
+            width: 25%;
+        }
+
+        .svg-swipe {
+            height: 40%;
+            width: 40%;
+        }
+
+        .rotate-btn-swipe {
+            position: absolute;
+            top: 0;
+            height: 85%;
+            width: 30%;
+        }
+
+        #slam-btn-swipe {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 15%;
+            width: 100%;
+        }
+
+        @media (min-width: 600px) {
+            #app {
+                justify-content: center !important;
+            }
+
+            #menu-container {
+                bottom: 50%;
+                width: initial;
+            }
+
+            #dpad-bg {
+                width: 27%;
+            }
+
+            #rotate-bg {
+                width: 25%;
+            }
+
+            .rotate-btn-swipe {
+                height: 75%;
+                width: 25%;
+            }
+
+            .svg-swipe {
+                height: 30%;
+                width: 30%;
+            }
+
+            #slam-btn-swipe {
+                height: 30%;
+            }
+        }
+    </style>
+</head>
+<body style="height: 90vh; border: 1px solid white; overflow: hidden;">
+    <div id="app" style="height: 100%; display: flex; flex-direction: column; justify-content: flex-end;">
+        <div id="menu-container">
+            <button id="pause-btn" style=" padding: 10px;">Pause</button>
+            <div style="height: 5vmin;"></div>
+            <button id="switch-mode-btn" style="padding: 10px;">Switch to swipe controls</button>
+        </div>
+
+        <div id="controls-swipe" style="display: none;">
+            <button id="rotate-anti-swipe" class="rotate-btn-swipe" style="left: 0;">
+                <svg class="svg-swipe" viewbox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1664 896q0 156-61 298t-164 245-245 164-298 61q-172 0-327-72.5t-264-204.5q-7-10-6.5-22.5t8.5-20.5l137-138q10-9 25-9 16 2 23 12 73 95 179 147t225 52q104 0 198.5-40.5t163.5-109.5 109.5-163.5 40.5-198.5-40.5-198.5-109.5-163.5-163.5-109.5-198.5-40.5q-98 0-188 35.5t-160 101.5l137 138q31 30 14 69-17 40-59 40h-448q-26 0-45-19t-19-45v-448q0-42 40-59 39-17 69 14l130 129q107-101 244.5-156.5t284.5-55.5q156 0 298 61t245 164 164 245 61 298z"/></svg>
+            </button>
+
+            <button id="rotate-clock-swipe" class="rotate-btn-swipe" style="right: 0;">
+                <svg class="svg-swipe" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1664 256v448q0 26-19 45t-45 19h-448q-42 0-59-40-17-39 14-69l138-138q-148-137-349-137-104 0-198.5 40.5t-163.5 109.5-109.5 163.5-40.5 198.5 40.5 198.5 109.5 163.5 163.5 109.5 198.5 40.5q119 0 225-52t179-147q7-10 23-12 14 0 25 9l137 138q9 8 9.5 20.5t-7.5 22.5q-109 132-264 204.5t-327 72.5q-156 0-298-61t-245-164-164-245-61-298 61-298 164-245 245-164 298-61q147 0 284.5 55.5t244.5 156.5l130-129q29-31 70-14 39 17 39 59z"/></svg>
+            </button>
+
+            <button id="slam-btn-swipe"><b>SLAM</b></button>
+        </div>
+
+        <div id="controls-btn" style="display: flex; justify-content: space-between; align-items: flex-end; border: 1px solid white;">
+            <div id="dpad-bg">
+                <div class="dpad-row-bg">
+                    <div class="dpad-cell"></div>
+                    <div class="dpad-cell dpad-btn-bg" style="padding-bottom: 0px; border-top-left-radius: 10px; border-top-right-radius: 10px;">
+                        <button id="dpad-up" class="dpad-btn"><b>SLAM</b></button>
+                    </div>
+                    <div class="dpad-cell"></div>
+                </div>
+
+                <div class="dpad-row-bg">
+                    <div class="dpad-cell dpad-btn-bg" style="padding-right: 10px; border-top-left-radius: 10px; border-bottom-left-radius: 10px;">
+                        <button id="dpad-left" class="dpad-btn"><b>LEFT </b></button>
+                    </div>
+                    <div class="dpad-cell dpad-btn-bg"></div>
+                    <div class="dpad-cell dpad-btn-bg" style="padding-left: 0px; border-top-right-radius: 10px; border-bottom-right-radius: 10px;">
+                        <button id="dpad-right" class="dpad-btn"><b>RIGHT</b></button>
+                    </div>
+                </div>
+
+                <div class="dpad-row-bg">
+                    <div class="dpad-cell"></div>
+                    <div class="dpad-cell dpad-btn-bg" style="padding-top: 0px; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px;">
+                        <button id="dpad-down" class="dpad-btn"><b>DOWN</b></button>
+                    </div>
+                    <div class="dpad-cell"></div>
+                </div>
+            </div>
+
+            <div id="rotate-bg">
+                <button id="rotate-anti" class="rotate-btn">
+                    <svg class="svg" viewbox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1664 896q0 156-61 298t-164 245-245 164-298 61q-172 0-327-72.5t-264-204.5q-7-10-6.5-22.5t8.5-20.5l137-138q10-9 25-9 16 2 23 12 73 95 179 147t225 52q104 0 198.5-40.5t163.5-109.5 109.5-163.5 40.5-198.5-40.5-198.5-109.5-163.5-163.5-109.5-198.5-40.5q-98 0-188 35.5t-160 101.5l137 138q31 30 14 69-17 40-59 40h-448q-26 0-45-19t-19-45v-448q0-42 40-59 39-17 69 14l130 129q107-101 244.5-156.5t284.5-55.5q156 0 298 61t245 164 164 245 61 298z"/></svg>
+                </button>
+                <button id="rotate-clock" class="rotate-btn">
+                    <svg class="svg" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1664 256v448q0 26-19 45t-45 19h-448q-42 0-59-40-17-39 14-69l138-138q-148-137-349-137-104 0-198.5 40.5t-163.5 109.5-109.5 163.5-40.5 198.5 40.5 198.5 109.5 163.5 163.5 109.5 198.5 40.5q119 0 225-52t179-147q7-10 23-12 14 0 25 9l137 138q9 8 9.5 20.5t-7.5 22.5q-109 132-264 204.5t-327 72.5q-156 0-298-61t-245-164-164-245-61-298 61-298 164-245 245-164 298-61q147 0 284.5 55.5t244.5 156.5l130-129q29-31 70-14 39 17 39 59z"/></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="hammer.min.js"></script>
+    <script>
+        /* eslint-disable */
+        // MAKE D-PAD BUTTON SQUARE
+
+        function resizeDpad() {
+            const dpadBtns = document.querySelectorAll('.dpad-btn, .rotate-btn');
+            for (let i = 0; i < dpadBtns.length; i++) {
+                const btn = dpadBtns[i];
+                window.requestAnimationFrame(() => { btn.style.height = btn.clientWidth + 'px'; });
+            }
+        }
+
+        resizeDpad();
+        window.addEventListener('resize', resizeDpad);
+
+        // WEBSOCKETS
+
+        const sock = new WebSocket('ws://' + window.location.hostname + ':81/', ['arduino']);
+        sock.onopen = function() {
+            sock.send('Connect ' + new Date());
+        };
+        sock.onerror = function(error) {
+            console.log('WebSocket error: ', error);
+        };
+        sock.onmessage = function(msg) {
+            console.log('Server: ', msg.data);
+            if (msg.data == 'pause') {
+                window.location.href = '/';
+            }
+        };
+        sock.onclose = function() {
+            console.log('WebSocket connection closed');
+        };
+
+        function handleSlam() {
+            console.log('slam');
+            sock.send('slam');
+        }
+
+        function handleLeft() {
+            console.log('left');
+            sock.send('left');
+        }
+
+        function handleRight() {
+            console.log('right');
+            sock.send('right');
+        }
+
+        function handleDown() {
+            console.log('down');
+            sock.send('down');
+        }
+
+        function handleRotateAnti() {
+            console.log('anti');
+            sock.send('anti');
+        }
+
+        function handleRotateClock() {
+            console.log('clock');
+            sock.send('clock');
+        }
+
+        // Button control handlers
+        document.getElementById('dpad-up').onclick = handleSlam;
+        document.getElementById('dpad-left').onclick = handleLeft;
+        document.getElementById('dpad-right').onclick = handleRight;
+        document.getElementById('dpad-down').onclick = handleDown;
+        document.getElementById('rotate-anti').onclick = handleRotateAnti;
+        document.getElementById('rotate-clock').onclick = handleRotateClock;
+
+        // SWIPE
+
+        // Swipe control handlers
+        document.getElementById('slam-btn-swipe').onclick = handleSlam;
+        document.getElementById('rotate-anti-swipe').onclick = handleRotateAnti;
+        document.getElementById('rotate-clock-swipe').onclick = handleRotateClock;
+
+        const touch = new Hammer(document.body, { recognizers: [[Hammer.Swipe]] });
+
+        function enableSwipeControls() {
+            touch.on('swipeleft', handleLeft);
+            touch.on('swiperight', handleRight);
+            touch.on('swipedown', handleDown);
+        }
+
+        function disableSwipeControls() {
+            touch.off('swipeleft', handleLeft);
+            touch.off('swiperight', handleRight);
+            touch.off('swipedown', handleDown);
+        }
+
+        // MENU
+
+        document.getElementById('pause-btn').onclick = () => {
+            sock.send('pause');
+        };
+
+        let mode = 'button';
+        const switchModeBtn = document.getElementById('switch-mode-btn');
+
+        switchModeBtn.onclick = () => {
+            const btnControls = document.getElementById('controls-btn');
+            const swipeControls = document.getElementById('controls-swipe');
+
+            if (mode == 'button') {
+                btnControls.style.display = 'none';
+                swipeControls.style.display = 'block';
+                switchModeBtn.innerHTML = 'Switch to button controls';
+                enableSwipeControls();
+                mode = 'swipe';
+            }
+            else {
+                btnControls.style.display = 'flex';
+                swipeControls.style.display = 'none';
+                switchModeBtn.innerHTML = 'Switch to swipe controls';
+                disableSwipeControls();
+                resizeDpad();
+                mode = 'button';
+            }
+        }
+    </script>
+</body>
+</html>

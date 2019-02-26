@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" style="height: 100%;">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tembusu Tetris</title>
+</head>
+<body style="height: 100%; overflow: hidden;">
+    <div style="height: 100%; display: flex; flex-direction: column; justify-content: center;">
+        <button id="resume-btn" style="flex-basis: auto; align-self: center; padding: 10px;">Resume</button>
+        <div style="height: 5vmin;"></div>
+        <button id="newgame-btn" style="flex-basis: auto; align-self: center; padding: 10px;">New game</button>
+    </div>
+
+    <script>
+        const resumeBtn = document.getElementById('resume-btn');
+        const newgameBtn = document.getElementById('newgame-btn');
+
+        const sock = new WebSocket('ws://' + window.location.hostname + ':81/', ['arduino']);
+        sock.onopen = function() {
+            sock.send('paused?');
+        };
+        sock.onerror = function(error) {
+            console.log('WebSocket error: ', error);
+        };
+        sock.onmessage = function(msg) {
+            if (msg.data == 'paused=1') {
+                resumeBtn.style.display = 'block';
+            }
+            else if (msg.data == 'paused=0') {
+                resumeBtn.style.display = 'none';
+            }
+            else if (msg.data == 'start') {
+                // Wait for confirmation from server before changing page
+                window.location.href = 'controls.html'
+            }
+        };
+        sock.onclose = function() {
+            console.log('WebSocket connection closed');
+        };
+
+        resumeBtn.onclick = () => {
+            sock.send('resume');
+        }
+
+        newgameBtn.onclick = () => {
+            sock.send('newgame');
+        }
+    </script>
+</body>

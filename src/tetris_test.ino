@@ -370,7 +370,8 @@ bool nexttick = true;
 
 void tick(){
   nexttick = true;
-  Serial.print("tick");
+  //Serial.print("tick");
+  //Serial.print("\n");
 }
 
 int count = 0;
@@ -378,18 +379,23 @@ void loop() {
   /*
   insert game logic here
   */
-  while(nexttick && !check_collision() && count<3){
-      move_down();
-      disp();
-      nexttick=false;
-  }
-  
-  count++;
-  update_Matrix();
-  if (count<3){
-    insert_piece();
-  }
-  else{
-    Serial.end();
+  if (nexttick){
+    if (count<3){
+      if (!check_collision()){
+        move_down();
+        disp();
+        nexttick=false;
+      }
+      else{
+        count++;
+        update_Matrix();
+        if (count<3){
+          insert_piece();
+        }
+        else{
+          Serial.end();
+        }
+      }
+    }
   }
 }

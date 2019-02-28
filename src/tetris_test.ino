@@ -1,18 +1,40 @@
 #include <Arduino.h>
-#include "Ticker.h"
+#include <Ticker.h>
 
-global int GAME_SPEED = 1000;
-global bool movement = false;
 
-global int curX; //current X-location of falling piece
-global int curY; //current X-location of falling piece
-global int curPiece; //id of current piece (pieces[curPiece] returns 4x4 piece array)
-global int Matrix[21][10]; //current Matrix
 
-global char pieces[28][4][4] = {
-                                 {'-','-','-','-'}, // 0: O 1
+int GAME_SPEED = 1000;
+bool movement = false;
+
+int curX; //current X-location of falling piece
+int curY; //current X-location of falling piece
+int curPiece; //id of current piece (pieces[curPiece] returns 4x4 piece array)
+char Matrix[21][10] = {{'-','-','-','-','-','-','-','-','-','-'},
+                      {'-','-','-','-','-','-','-','-','-','-'},
+                      {'-','-','-','-','-','-','-','-','-','-'},
+                      {'-','-','-','-','-','-','-','-','-','-'},
+                      {'-','-','-','-','-','-','-','-','-','-'},
+                      {'-','-','-','-','-','-','-','-','-','-'},
+                      {'-','-','-','-','-','-','-','-','-','-'},
+                      {'-','-','-','-','-','-','-','-','-','-'},
+                      {'-','-','-','-','-','-','-','-','-','-'},
+                      {'-','-','-','-','-','-','-','-','-','-'},
+                      {'-','-','-','-','-','-','-','-','-','-'},
+                      {'-','-','-','-','-','-','-','-','-','-'},
+                      {'-','-','-','-','-','-','-','-','-','-'},
+                      {'-','-','-','-','-','-','-','-','-','-'},
+                      {'-','-','-','-','-','-','-','-','-','-'},
+                      {'-','-','-','-','-','-','-','-','-','-'},
+                      {'-','-','-','-','-','-','-','-','-','-'},
+                      {'-','-','-','-','-','-','-','-','-','-'},
+                      {'-','-','-','-','-','-','-','-','-','-'},
+                      {'-','-','-','-','-','-','-','-','-','-'},
+                      {'-','-','-','-','-','-','-','-','-','-'}}; //current Matrix
+
+char pieces[28][4][4] = {
+                                {{'-','-','-','-'}, // 0: O 1
                                  {'-','y','y','-'},
-                                 ['-','y','y','-'},
+                                 {'-','y','y','-'},
                                  {'-','-','-','-'}},
 
                                 {{'-','-','-','-'}, // 1: O 2
@@ -149,16 +171,8 @@ global char pieces[28][4][4] = {
                                  {'-','-','v','v'},
                                  {'-','-','v','-'},
                                  {'-','-','-','-'}}
-                                                   }
+                                                   };
 
-
-
-
-void setup() {
-  Serial.begin(9600);
-  randomSeed(analogRead(0));
-  Ticker tickerObject(movementToggle, GAME_SPEED);
-}
 
 /*
 Implementation:
@@ -193,10 +207,10 @@ void move_right(){
 }
 
 bool check_overlap(){
-  char piece[4][4] = pieces[curPiece];
+  //char piece[4][4] = pieces[curPiece];
   for (int i = 0; i<4; i++){
     for (int j = 0; j<4; j++){
-      if (piece[i][j]!='-'){
+      if (pieces[curPiece][i][j]!='-'){
         if ((curX + j > 9) || (curY + i > 20)){
           return true;
         }
@@ -216,11 +230,11 @@ void rotate(){
 }
 
 void update_Matrix(){ //updates Matrix after collision at bottom is detected
-  char piece[4][4] = pieces(curPiece);
+  //char piece[4][4] = pieces[curPiece];
   for (int i = 0; i<4; i++){
     for (int j = 0; j<4; j++){
-      if (piece[i][j]!='-'){
-        Matrix[curY+i][curX+j] = piece[i][j];
+      if (pieces[curPiece][i][j]!='-'){
+        Matrix[curY+i][curX+j] = pieces[curPiece][i][j];
       }
     }
   }
@@ -246,7 +260,7 @@ void check_full_line(){
     }
   }
   // SHIFTS EVERYTHING DOWN AFTER CLEARING
-  remain[21] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20};
+  int remain[21] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20};
   for (int i = 0; i<numfull; i++){
     remain[full[i]] = -1;
   }
@@ -271,21 +285,23 @@ void check_full_line(){
   */
   for (int i = 20; i>=0; i--){
     if (remain[i]!=i){
-      Matrix[i] = Matrix[remain[i]]; //updates Matrix
+      for (int j = 0; j<10; j++){
+        Matrix[i][j] = Matrix[remain[i]][j];
+      }
     }
   }
 }
 
 
 bool check_collision(){ //checks collision at the bottom
-  char piece[4][4] = pieces[curPiece];
+  //char piece[4][4] = pieces[curPiece];
   for (int i = 0; i<4; i++){
     for (int j = 0; j<4; j++){
-      if (piece[i][j]!='-'){
+      if (pieces[curPiece][i][j]!='-'){
         if (curY + i == 20){ //hits the floor
           return true;
         }
-        else if (piece[i+1][j]!='-' && Matrix[curY+i+1][curX]!='-'){ //hits already fallen pieces
+        else if ((i==3 || pieces[curPiece][i+1][j]=='-') && Matrix[curY+i+1][curX+j]!='-'){ //hits already fallen pieces
           return true;
         }
       }
@@ -295,11 +311,11 @@ bool check_collision(){ //checks collision at the bottom
 }
 
 bool rotate_check_collision(){
-  int tocheck[4][4];
-  tocheck = (curPiece%4==3) ? pieces[curPiece-3] : pieces[curPiece+1];
+  int tocheck;
+  tocheck = (curPiece%4==3) ? curPiece-3 : curPiece+1;
   for (int i = 0; i<4; i++){
     for (int j = 0; j<4; j++){
-      if (tocheck[i][j]!='-'){
+      if (pieces[tocheck][i][j]!='-'){
         if ((curX + j > 9) || (curY + i > 20)){
           return true;
         }
@@ -312,11 +328,68 @@ bool rotate_check_collision(){
   return false;
 }
 
+void insert_piece(){
+  curPiece = (random(0,7))*4;
+  curX = 3;
+  curY = 0;
+}
 
 void movementToggle(bool movement){
   movement = true;
 }
 
-void loop() {
+void disp(){
+  for (int i=0; i<21; i++){
+    for (int j=0; j<10; j++){
+      if (i>=curY && i<curY+4 && j>=curX && j<curX+4 && Matrix[i][j]=='-'){
+        Serial.print(pieces[curPiece][i-curY][j-curX]);
+      }
+      else{
+        Serial.print(Matrix[i][j]);
+      }
+      Serial.print(' ');
+    }
+    Serial.print("\n");
+  }
+  Serial.print("\n");
+}
 
+Ticker game_ticker;
+
+void setup() {
+  Serial.begin(9600);
+  randomSeed(analogRead(0));
+  game_ticker.attach(1,tick);
+  //FOR TESTING:
+  curPiece = 5;
+  curX = 3;
+  curY = 0;
+}
+
+bool nexttick = true;
+
+void tick(){
+  nexttick = true;
+  Serial.print("tick");
+}
+
+int count = 0;
+void loop() {
+  /*
+  insert game logic here
+  */
+  while(nexttick && !check_collision() && count<3){
+      move_down();
+      disp();
+      nexttick=false;
+  }
+  
+  count++;
+  update_Matrix();
+  if (count<3){
+    insert_piece();
+  }
+  else{
+    Serial.end();
+  }
 }

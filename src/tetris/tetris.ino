@@ -28,6 +28,8 @@
 **/
 #include "globals.h"
 
+#define BOARD_HEIGHT 32
+#define BOARD_WIDTH 16
 
 bool isGamePaused = false;
 
@@ -40,11 +42,28 @@ void setup() {
     startWifi();
     startWebServer();
     startWebsocketServer();
+
+    gameTicker.attach(1, tickIt);
 }
 
 void loop() {
     server.handleClient();
     webSocket.loop();
+
+    if (gameTick) {
+        Serial.println("Game tick");
+        gameTick = false;
+    }
+}
+
+uint rcToIndex(uint row, uint col) {
+    // Converts 0-indexed row and col co-ords into a single index position
+    // for the snake layout of the board. Assumes data in is bottom right corner
+    if (col & 0x01) {  // col is odd
+        return (BOARD_WIDTH - 1 - col)*BOARD_HEIGHT + BOARD_HEIGHT - 1 - row;
+    } else {  // col is even
+        return (BOARD_WIDTH - 1 - col)*BOARD_HEIGHT + row
+    }
 }
 
 

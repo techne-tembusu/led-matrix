@@ -1,10 +1,8 @@
 #include <Arduino.h>
 #include <Ticker.h>
 
-
-
 int GAME_SPEED = 1.5;
-bool movement = false;
+int score = 0;
 
 int curX; //current X-location of falling piece
 int curY; //current X-location of falling piece
@@ -26,10 +24,10 @@ char Matrix[21][10] = {{'-','-','-','-','-','-','-','-','-','-'},
                       {'-','-','-','-','-','-','-','-','-','-'},
                       {'-','-','-','-','-','-','-','-','-','-'},
                       {'-','-','-','-','-','-','-','-','-','-'},
-                      {'-','-','-','-','-','-','-','-','-','-'},
-                      {'-','-','-','-','-','-','-','-','-','-'},
-                      {'-','-','-','-','-','-','-','-','-','-'},
-                      {'-','-','-','-','-','-','-','-','-','-'}}; //current Matrix
+                      {'b','b','b','-','b','b','b','b','b','b'},
+                      {'b','b','b','-','-','b','b','b','b','b'},
+                      {'b','b','b','-','-','b','b','b','b','b'},
+                      {'b','b','b','-','b','b','b','b','b','b'}}; //current Matrix
 
 char pieces[28][4][4] = {
                                 {{'-','-','-','-'}, // 0: O 1
@@ -206,23 +204,6 @@ void move_right(){
   }
 }
 
-//bool check_overlap(){
-//  //char piece[4][4] = pieces[curPiece];
-//  for (int i = 0; i<4; i++){
-//    for (int j = 0; j<4; j++){
-//      if (pieces[curPiece][i][j]!='-'){
-//        if ((curX + j > 9) || (curY + i > 20)){
-//          return true;
-//        }
-//        if (Matrix[curY+i][curX+j]!='-'){
-//          return true;
-//        }
-//      }
-//    }
-//  }
-//  return false;
-//}
-
 bool check_overlap_left(){
   for (int i = 0; i<4; i++){
     for (int j = 0; j<4; j++){
@@ -255,8 +236,26 @@ bool check_overlap_right(){
   return false;
 }
 
+bool rotate_check_collision(int anti){
+  int tocheck;
+  tocheck = (anti == 0) ? ((curPiece%4==3) ? curPiece-3 : curPiece+1) : ((curPiece%4==0) ? curPiece+3 : curPiece-1);
+  for (int i = 0; i<4; i++){
+    for (int j = 0; j<4; j++){
+      if (pieces[tocheck][i][j]!='-'){
+        if ((curX + j > 9) || (curY + i > 20)){
+          return true;
+        }
+        if (Matrix[curY+i][curX+j]!='-'){
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
 void rotate_c(){
-  if (!rotate_check_collision()){
+  if (!rotate_check_collision(0)){
     curPiece = (curPiece%4==3) ? curPiece-3 : curPiece+1;
   }
 }
@@ -282,14 +281,18 @@ void check_full_line(){
   // FIND FULL LINES
   int full[21]; //array to store full rows
   int numfull = 0; //index to stop at
+  bool is_full = true;
   for (int i = 20; i>=0; i--){ //finds full rows
     for (int j = 0; j<10; j++){
-      if (Matrix[i][j] = '-'){
-        break;
+      if (Matrix[i][j] == '-'){
+        is_full = false;
       }
     }
-    full[numfull] = i;
-    numfull++;
+    if (is_full){
+      full[numfull] = i;
+      numfull++;
+    }
+    is_full = true;
   }
   // CLEAR FULL LINES
   for (int k = 0; k<numfull; k++){
@@ -297,30 +300,37 @@ void check_full_line(){
       Matrix[full[k]][m] = '-';
     }
   }
+  // ADDS TO SCORE
+  score += numfull;
+  
   // SHIFTS EVERYTHING DOWN AFTER CLEARING
+  if (numfull==0){
+    return; // no full lines; nothing to shift down
+  }
   int remain[21] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20};
   for (int i = 0; i<numfull; i++){
     remain[full[i]] = -1;
   }
   for (int i = 20; i>=0; i--){
     int idx = i;
-    while (idx < 21 || remain[idx+1]==-1){
-      remain[idx+1]=remain[idx];
-      remain[idx] = -1;
-      idx++;
+    if (remain[i]!=-1){
+      while (remain[idx+1]==-1){
+        int temp = remain[idx];
+        remain[idx+1] = temp;
+        remain[idx] = -1;
+        idx++;
+        if (idx==20){
+          break;
+        }
+      }
     }
   }
-  /*E.g. for cleared rows 20, 19 and 16
-  remain = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,-1,17,18,-1,-1};
-  {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,-1,17,-1,18,-1}
-  {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,-1,17,-1,-1,18}
-  {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,-1,-1,17,-1,18}
-  {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,-1,-1,-1,17,18}
-  ...
-  {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,-1,-1,-1,15,17,18}
-  ...
-  {-1,-1,-1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,17,18}
-  */
+//  for (int p = 0; p<21; p++){
+//    Serial.print(remain[p]);
+//    Serial.print(' ');
+//  }
+//  Serial.print('\n');
+  
   for (int i = 20; i>=0; i--){
     if (remain[i]!=i && remain[i]!=-1){
       for (int j = 0; j<10; j++){
@@ -334,6 +344,20 @@ void check_full_line(){
     }
   }
 }
+
+/* Explanation of Algorithm in check_full_line()
+  E.g. for cleared rows 20, 19 and 16
+  remain = 
+  {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,-1,17,18,-1,-1};
+  {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,-1,17,-1,18,-1}
+  {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,-1,17,-1,-1,18}
+  {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,-1,-1,17,-1,18}
+  {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,-1,-1,-1,17,18}
+  ...
+  {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,-1,-1,-1,15,17,18}
+  ...
+  {-1,-1,-1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,17,18}
+*/
 
 
 bool check_collision(){ //checks collision at the bottom
@@ -353,24 +377,6 @@ bool check_collision(){ //checks collision at the bottom
   return false;
 }
 
-bool rotate_check_collision(int anti = 0){
-  int tocheck;
-  tocheck = (anti == 0) ? ((curPiece%4==3) ? curPiece-3 : curPiece+1) : ((curPiece%4==0) ? curPiece+3 : curPiece-1);
-  for (int i = 0; i<4; i++){
-    for (int j = 0; j<4; j++){
-      if (pieces[tocheck][i][j]!='-'){
-        if ((curX + j > 9) || (curY + i > 20)){
-          return true;
-        }
-        if (Matrix[curY+i][curX+j]!='-'){
-          return true;
-        }
-      }
-    }
-  }
-  return false;
-}
-
 void insert_piece(){
   curPiece = (random(0,7))*4;
   curX = 3;
@@ -382,6 +388,9 @@ void movementToggle(bool movement){
 }
 
 void disp(){
+  Serial.print("Score: ");
+  Serial.print(score);
+  Serial.print('\n');
   for (int i=0; i<21; i++){
     for (int j=0; j<10; j++){
       if (i>=curY && i<curY+4 && j>=curX && j<curX+4 && Matrix[i][j]=='-'){
@@ -439,6 +448,10 @@ void loop() {
       rotate_c();
       disp();
       break;
+    case 'p':
+      rotate_ac();
+      disp();
+      break;
   }
   if (nexttick){
     if (count<3){
@@ -450,6 +463,7 @@ void loop() {
       else{
         count++;
         update_Matrix();
+        check_full_line();
         if (count<3){
           insert_piece();
         }

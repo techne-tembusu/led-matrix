@@ -1,9 +1,7 @@
 #include <Arduino.h>
 #include <Ticker.h>
 
-
-
-int GAME_SPEED = 1000;
+int GAME_SPEED = 1.5;
 bool movement = false;
 
 int curX; //current X-location of falling piece
@@ -195,26 +193,58 @@ void move_down(){ //moves piece down
 }
 
 void move_left(){
-  if (!check_overlap()){
-    curX = (curX == 0) ? curX : curX-1;
+  if (!check_overlap_left()){
+    curX = curX-1;
   }
 }
 
 void move_right(){
-  if (!check_overlap()){
-    curX = (curX == 9) ? curX : curX+1;
+  if (!check_overlap_right()){
+    curX = curX+1;
   }
 }
 
-bool check_overlap(){
-  //char piece[4][4] = pieces[curPiece];
+//bool check_overlap(){
+//  //char piece[4][4] = pieces[curPiece];
+//  for (int i = 0; i<4; i++){
+//    for (int j = 0; j<4; j++){
+//      if (pieces[curPiece][i][j]!='-'){
+//        if ((curX + j > 9) || (curY + i > 20)){
+//          return true;
+//        }
+//        if (Matrix[curY+i][curX+j]!='-'){
+//          return true;
+//        }
+//      }
+//    }
+//  }
+//  return false;
+//}
+
+bool check_overlap_left(){
   for (int i = 0; i<4; i++){
     for (int j = 0; j<4; j++){
       if (pieces[curPiece][i][j]!='-'){
-        if ((curX + j > 9) || (curY + i > 20)){
+        if (curX + j - 1 < 0){ // crashes with left side
           return true;
         }
-        if (Matrix[curY+i][curX+j]!='-'){
+        if (Matrix[curY+i][curX+j-1]!='-'){
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
+bool check_overlap_right(){
+  for (int i = 0; i<4; i++){
+    for (int j = 0; j<4; j++){
+      if (pieces[curPiece][i][j]!='-'){
+        if (curX + j + 1 > 9){ // crashes with right side
+          return true;
+        }
+        if (Matrix[curY+i][curX+j+1]!='-'){
           return true;
         }
       }
@@ -284,9 +314,14 @@ void check_full_line(){
   {-1,-1,-1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,17,18}
   */
   for (int i = 20; i>=0; i--){
-    if (remain[i]!=i){
+    if (remain[i]!=i && remain[i]!=-1){
       for (int j = 0; j<10; j++){
         Matrix[i][j] = Matrix[remain[i]][j];
+      }
+    }
+    else if (remain[i]==-1){
+      for (int j = 0; j<10; j++){
+        Matrix[i][j] = '-';
       }
     }
   }
@@ -359,7 +394,7 @@ Ticker game_ticker;
 void setup() {
   Serial.begin(9600);
   randomSeed(analogRead(0));
-  game_ticker.attach(1,tick);
+  game_ticker.attach(GAME_SPEED,tick);
   //FOR TESTING:
   curPiece = 5;
   curX = 3;
@@ -379,6 +414,18 @@ void loop() {
   /*
   insert game logic here
   */
+  char mv;
+  if (Serial.available()>0){
+    mv = Serial.read();
+  }
+  switch(mv){
+    case 'l':
+      move_left();
+      disp();
+    case 'r':
+      move_right();
+      disp();
+  }
   if (nexttick){
     if (count<3){
       if (!check_collision()){

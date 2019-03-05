@@ -1,3 +1,14 @@
+**04-03-19: Format of Final Matrix**
+
+![Final Matrix Display Format](https://raw.githubusercontent.com/kabir-plod/led-matrix/master/LED_Matrix_Format.png)
+
+Things to do:
+- Work on next_piece (storing the next piece so that it can be displayed)
+- display function for next_piece
+- display function for score
+- integrated display function
+- integration with FastLED library
+
 **26-02-19: New Implementation**
 
 Implementation (_a simpler one_):

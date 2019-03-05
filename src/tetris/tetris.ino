@@ -5,7 +5,7 @@
  *   https://github.com/esp8266/arduino-esp8266fs-plugin/releases/download/0.3.0/ESP8266FS-0.3.0.zip.
  *   In your Arduino sketchbook directory, create tools directory if it doesn't exist yet
  * - Unpack the tool into tools directory (the path will look like
- *   <user_dir>/Documents/tools/ESP8266FS/tool/esp8266fs.jar)
+ *   <user_dir>/Documents/tools/ESP8266FS/tool/esp8266fs.jar) // or inside arduino, tools
  * - Restart Arduino IDE
  * - Go to sketch directory (choose Sketch > Show Sketch Folder)
  * - Create a directory named data. Place any files you want in the file system there
@@ -19,6 +19,7 @@
  * If you get an error saying `SPIFFS_write error(-10001): File system is full`, this means that your files
  * are too large to fit into the SPIFFS memory. Select a larger SPIFFS size under Tools > Flash Size, or delete
  * some files.
+ * Or if it says : SPIFFS Not defined for ... Just choose a setting with SPIFFS under Tools>Flash Size
  * Even if your computer says that the files are smaller than the selected SPIFFS size, you can still get
  * this error: this has to do with block sizes, and metadata like file and folder names that take up space
  * as well.
@@ -27,6 +28,7 @@
  * to read the files.
 **/
 #include "globals.h"
+#include <Ticker.h>
 
 #define BOARD_HEIGHT 32
 #define BOARD_WIDTH 16
@@ -35,7 +37,9 @@ bool isGamePaused = false;
 
 int net_right = 0;
 int net_rotate = 0;
-
+int curX;
+int curY;
+int curPiece;
 // MOVEMENT FUNCTIONS
 
 void move_down(){ //moves piece down
@@ -156,7 +160,7 @@ void update_score_disp(){ //Updates Score matrix
    */
    int digit1 = score/100;
    int digit2 = (score-(score/100)*100)/10;
-   int digit3 = score-((score/10)*10;
+   int digit3 = score-((score/10)*10);
    for (int i = 2; i<7; i++){
     for (int j = 1; j<3; j++){
       Score[i][j] = numbers[digit1][i-2][j-1]; 
@@ -266,11 +270,13 @@ void setup() {
     startWebServer();
     startWebsocketServer();
 
-    //gameTicker.attach(1, tickIt);
+    Ticker gameTicker;
+    gameTicker.attach(1, tick);
 }
 
 void loop() {
     server.handleClient();
+    
     webSocket.loop();
 
     if (net_right>0){
@@ -331,8 +337,8 @@ void handleWebsocketMessage(int num, const char* msg) {
         isGamePaused = false;
         webSocket.sendTXT(num, "start");
     } else if (strcmp(msg, "newgame") == 0) {
-        // TODO
-        // newgame();
+        
+        serveControls(); // NEW
         isGamePaused = false;
         webSocket.sendTXT(num, "start");
     }
@@ -340,6 +346,7 @@ void handleWebsocketMessage(int num, const char* msg) {
     else if (strcmp(msg, "slam") == 0) {
         // TODO
     } else if (strcmp(msg, "left") == 0) {
+        Serial.printf("left");
         net_right--;
     } else if (strcmp(msg, "right") == 0) {
         net_right++;

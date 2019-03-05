@@ -148,6 +148,32 @@ void update_Matrix(){ //updates Matrix after collision at bottom is detected
   }
 }
 
+void update_score_disp(){ //Updates Score matrix
+  /*
+   index of #1: 2<=i<=6, 1<=j<=3
+   index of #2: 2<=i<=6, 5<=j<=7
+   index of #3: 2<=i<=6, 9<=j<=11
+   */
+   int digit1 = score/100;
+   int digit2 = (score-(score/100)*100)/10;
+   int digit3 = score-((score/10)*10;
+   for (int i = 2; i<7; i++){
+    for (int j = 1; j<3; j++){
+      Score[i][j] = numbers[digit1][i-2][j-1]; 
+    }
+   }
+   for (int i = 2; i<7; i++){
+    for (int j = 5; j<8; j++){
+      Score[i][j] = numbers[digit2][i-2][j-1]; 
+    }
+   }
+   for (int i = 2; i<7; i++){
+    for (int j = 9; j<12; j++){
+      Score[i][j] = numbers[digit3][i-2][j-1]; 
+    }
+   }
+}
+
 void check_full_line(){
   // FIND FULL LINES
   int full[21]; //array to store full rows
@@ -210,8 +236,13 @@ void check_full_line(){
   }
 }
 
+void generate_piece(){
+  nextPiece = (random(0,7))*4;
+}
+
 void insert_piece(){
-  curPiece = (random(0,7))*4;
+  curPiece = (nextPiece == -1) ? (random(0,7))*4 : nextPiece; // -1 -> first piece of the game
+  generate_piece(); //generates the next piece so that it can be displayed
   curX = 3;
   curY = 0;
 }

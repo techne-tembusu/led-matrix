@@ -33,6 +33,198 @@
 
 bool isGamePaused = false;
 
+int net_right = 0;
+int net_rotate = 0;
+
+// MOVEMENT FUNCTIONS
+
+void move_down(){ //moves piece down
+  curY++;
+}
+
+void move_left(){
+  if (!check_overlap_left()){
+    curX--;
+  }
+}
+
+void move_right(){
+  if (!check_overlap_right()){
+    curX++;
+  }
+}
+
+void rotate_c(){
+  if (!rotate_check_collision(0)){
+    curPiece = (curPiece%4==3) ? curPiece-3 : curPiece+1;
+  }
+}
+
+void rotate_ac(){
+  if (!rotate_check_collision(1)){
+    curPiece = (curPiece%4==0) ? curPiece+3 : curPiece-1;
+  }
+}
+
+// COLLISION CHECK FUNCTIONS
+
+bool check_overlap_left(){
+  for (int i = 0; i<4; i++){
+    for (int j = 0; j<4; j++){
+      if (pieces[curPiece][i][j]!='-'){
+        if (curX + j - 1 < 0){ // crashes with left side
+          return true;
+        }
+        if (Matrix[curY+i][curX+j-1]!='-'){
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
+bool check_overlap_right(){
+  for (int i = 0; i<4; i++){
+    for (int j = 0; j<4; j++){
+      if (pieces[curPiece][i][j]!='-'){
+        if (curX + j + 1 > 9){ // crashes with right side
+          return true;
+        }
+        if (Matrix[curY+i][curX+j+1]!='-'){
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
+bool rotate_check_collision(int anti){
+  int tocheck;
+  tocheck = (anti == 0) ? ((curPiece%4==3) ? curPiece-3 : curPiece+1) : ((curPiece%4==0) ? curPiece+3 : curPiece-1);
+  for (int i = 0; i<4; i++){
+    for (int j = 0; j<4; j++){
+      if (pieces[tocheck][i][j]!='-'){
+        if ((curX + j > 9) || (curY + i > 20)){
+          return true;
+        }
+        if (Matrix[curY+i][curX+j]!='-'){
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
+bool check_collision(){ //checks collision at the bottom
+  //char piece[4][4] = pieces[curPiece];
+  for (int i = 0; i<4; i++){
+    for (int j = 0; j<4; j++){
+      if (pieces[curPiece][i][j]!='-'){
+        if (curY + i == 20){ //hits the floor
+          return true;
+        }
+        else if ((i==3 || pieces[curPiece][i+1][j]=='-') && Matrix[curY+i+1][curX+j]!='-'){ //hits already fallen pieces
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
+// GAME FUNCTIONS
+
+void update_Matrix(){ //updates Matrix after collision at bottom is detected
+  //char piece[4][4] = pieces[curPiece];
+  for (int i = 0; i<4; i++){
+    for (int j = 0; j<4; j++){
+      if (pieces[curPiece][i][j]!='-'){
+        Matrix[curY+i][curX+j] = pieces[curPiece][i][j];
+      }
+    }
+  }
+}
+
+void check_full_line(){
+  // FIND FULL LINES
+  int full[21]; //array to store full rows
+  int numfull = 0; //index to stop at
+  bool is_full = true;
+  for (int i = 20; i>=0; i--){ //finds full rows
+    for (int j = 0; j<10; j++){
+      if (Matrix[i][j] == '-'){
+        is_full = false;
+      }
+    }
+    if (is_full){
+      full[numfull] = i;
+      numfull++;
+    }
+    is_full = true;
+  }
+  // CLEAR FULL LINES
+  for (int k = 0; k<numfull; k++){
+    for (int m = 0; m<10; m++){
+      Matrix[full[k]][m] = '-';
+    }
+  }
+  // ADDS TO SCORE
+  score += numfull;
+  
+  // SHIFTS EVERYTHING DOWN AFTER CLEARING
+  if (numfull==0){
+    return; // no full lines; nothing to shift down
+  }
+  int remain[21] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20};
+  for (int i = 0; i<numfull; i++){
+    remain[full[i]] = -1;
+  }
+  for (int i = 20; i>=0; i--){
+    int idx = i;
+    if (remain[i]!=-1){
+      while (remain[idx+1]==-1){
+        int temp = remain[idx];
+        remain[idx+1] = temp;
+        remain[idx] = -1;
+        idx++;
+        if (idx==20){
+          break;
+        }
+      }
+    }
+  }
+  for (int i = 20; i>=0; i--){
+    if (remain[i]!=i && remain[i]!=-1){
+      for (int j = 0; j<10; j++){
+        Matrix[i][j] = Matrix[remain[i]][j];
+      }
+    }
+    else if (remain[i]==-1){
+      for (int j = 0; j<10; j++){
+        Matrix[i][j] = '-';
+      }
+    }
+  }
+}
+
+void insert_piece(){
+  curPiece = (random(0,7))*4;
+  curX = 3;
+  curY = 0;
+}
+
+// TICKER FUNCTION
+
+void tick(){
+  nexttick = true;
+  //Serial.print("tick");
+  //Serial.print("\n");
+}
+
+// THE REST
 
 void setup() {
     Serial.begin(115200);
@@ -43,16 +235,44 @@ void setup() {
     startWebServer();
     startWebsocketServer();
 
-    gameTicker.attach(1, tickIt);
+    //gameTicker.attach(1, tickIt);
 }
 
 void loop() {
     server.handleClient();
     webSocket.loop();
 
-    if (gameTick) {
+    if (net_right>0){
+      while (net_right!=0){
+        move_right();
+        net_right--;
+      }
+    }
+
+    if (net_right<0){
+      while (net_right!=0){
+        move_left();
+        net_right++;
+      }
+    }
+
+    if (net_rotate>0){
+      while (net_rotate!=0){
+        rotate_c();
+        net_rotate--;
+      }
+    }
+
+    if (net_rotate<0){
+      while (net_rotate!=0){
+        rotate_ac();
+        net_rotate++;
+      }
+    }
+
+    if (nexttick) {
         Serial.println("Game tick");
-        gameTick = false;
+        nexttick = false;
     }
 }
 
@@ -62,7 +282,7 @@ uint rcToIndex(uint row, uint col) {
     if (col & 0x01) {  // col is odd
         return (BOARD_WIDTH - 1 - col)*BOARD_HEIGHT + BOARD_HEIGHT - 1 - row;
     } else {  // col is even
-        return (BOARD_WIDTH - 1 - col)*BOARD_HEIGHT + row
+        return (BOARD_WIDTH - 1 - col)*BOARD_HEIGHT + row;
     }
 }
 
@@ -89,15 +309,15 @@ void handleWebsocketMessage(int num, const char* msg) {
     else if (strcmp(msg, "slam") == 0) {
         // TODO
     } else if (strcmp(msg, "left") == 0) {
-        // TODO
+        net_right--;
     } else if (strcmp(msg, "right") == 0) {
-        // TODO
+        net_right++;
     } else if (strcmp(msg, "down") == 0) {
         // TODO
     } else if (strcmp(msg, "clock") == 0) {
-        // TODO
+        net_rotate++;
     } else if (strcmp(msg, "anti") == 0) {
-        // TODO
+        net_rotate--;
     } else {
       Serial.printf("[Ws] Unknown message: %s\n", msg);
     }

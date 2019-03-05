@@ -33,10 +33,9 @@ void loop() {
   for (int r = 15; r<21; r++){ 
     for (int c = 12;c <16 ; c++){
       leds[rcToIndex(r,c)] = CRGB(80,0,0);
-         n = (n+1) % NUM;
+      //   n = (n+1) % NUM;
    }
  }
  FastLED.show();
 
 }
-

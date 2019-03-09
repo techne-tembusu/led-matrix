@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Tembusu Tetris</title>
+    <title>Tembusu Stickman</title>
 
     <style>
         #rotate-bg {
@@ -138,7 +138,7 @@
                 <svg class="svg-swipe" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1664 256v448q0 26-19 45t-45 19h-448q-42 0-59-40-17-39 14-69l138-138q-148-137-349-137-104 0-198.5 40.5t-163.5 109.5-109.5 163.5-40.5 198.5 40.5 198.5 109.5 163.5 163.5 109.5 198.5 40.5q119 0 225-52t179-147q7-10 23-12 14 0 25 9l137 138q9 8 9.5 20.5t-7.5 22.5q-109 132-264 204.5t-327 72.5q-156 0-298-61t-245-164-164-245-61-298 61-298 164-245 245-164 298-61q147 0 284.5 55.5t244.5 156.5l130-129q29-31 70-14 39 17 39 59z"/></svg>
             </button>
 
-            <button id="up-btn-swipe"><b>UP</b></button>
+            <button id="up-btn-swipe"><b>SLAM</b></button>
         </div>
 
         <div id="controls-btn" style="display: flex; justify-content: space-between; align-items: flex-end; border: 1px solid white;">
@@ -146,7 +146,7 @@
                 <div class="dpad-row-bg">
                     <div class="dpad-cell"></div>
                     <div class="dpad-cell dpad-btn-bg" style="padding-bottom: 0px; border-top-left-radius: 10px; border-top-right-radius: 10px;">
-                        <button id="dpad-up" class="dpad-btn"><b>UP</b></button>
+                        <button id="dpad-up" class="dpad-btn"><b>SLAM</b></button>
                     </div>
                     <div class="dpad-cell"></div>
                 </div>
@@ -264,14 +264,12 @@
         const touch = new Hammer(document.body, { recognizers: [[Hammer.Swipe]] });
 
         function enableSwipeControls() {
-            touch.on('swipeup', handleUp);
             touch.on('swipeleft', handleLeft);
             touch.on('swiperight', handleRight);
             touch.on('swipedown', handleDown);
         }
 
         function disableSwipeControls() {
-            touch.off('swipeup', handleUp);
             touch.off('swipeleft', handleLeft);
             touch.off('swiperight', handleRight);
             touch.off('swipedown', handleDown);

@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Tembusu Tetris</title>
+    <title>Tembusu Stickman</title>
 </head>
 <body style="height: 100%; overflow: hidden;">
     <div style="height: 100%; display: flex; flex-direction: column; justify-content: center;">
@@ -40,10 +40,12 @@
         };
 
         resumeBtn.onclick = () => {
+            console.log('resume');
             sock.send('resume');
         }
 
         newgameBtn.onclick = () => {
+            console.log('new game');
             sock.send('newgame');
         }
     </script>

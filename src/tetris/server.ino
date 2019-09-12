@@ -35,28 +35,23 @@ void startWebsocketServer() {
 
 void serveIndex() {
     if (numConnections == 0) {
-        //debug code to test successful connectiion
-        //server.send(200, "text/html", "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>Tembusu Tetris</title><body>You are connected!.</body>");
-
         File file = SPIFFS.open("/index.html", "r");
-
-        server.streamFile(file, "text/html");        
+        server.streamFile(file, "text/html");
         file.close();
     }
     else {
         server.send(200, "text/html", "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>Tembusu Tetris</title><body>Someone is already playing tetris. Refresh the page after they're done.</body>");
     }
-
 }
 
 void serveControls() {
-    if (numConnections == 1) { // only when got player then can see
+    if (numConnections == 0) {
         File file = SPIFFS.open("/controls.html", "r");
         server.streamFile(file, "text/html");
         file.close();
     }
     else {
-        serveIndex();//server.send(200, "text/html", "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>Tembusu Tetris</title><body>Someone is already playing tetris. Refresh the page after they're done.</body>");
+        server.send(200, "text/html", "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>Tembusu Tetris</title><body>Someone is already playing tetris. Refresh the page after they're done.</body>");
     }
 }
 

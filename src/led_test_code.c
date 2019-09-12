@@ -4,7 +4,7 @@
 #define DATA_PIN D6
 
 /**
-* LED test code
+* LED test code!
 */
 
 CRGB leds[NUM];

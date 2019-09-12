@@ -3,6 +3,10 @@
 #define NUM 150
 #define DATA_PIN D6
 
+/**
+* LED test code
+*/
+
 CRGB leds[NUM];
 int n=0;
 

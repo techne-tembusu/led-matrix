@@ -15,9 +15,21 @@ void setup() {
 }
 
 void loop() {
-  leds[n] = CRGB(127,127,127);
-  leds[(n-1)%NUM] = CRGB(0,0,0);
+  if(n < 512) {
+    if (n % 3 == 0) {
+      leds[n] = CRGB(63,0,0);
+    }
+    else if (n % 3 == 1) {
+      leds[n] = CRGB(0,63,0);
+    }
+    else {
+      leds[n] = CRGB(0,0,63);
+    }
+  }
+  else {
+    leds[(n)%NUM] = CRGB(0,0,0);
+  }
   FastLED.show();
-  n = (n+1) % NUM;
-  delay(200);
+  n = (n+1) % (2 * NUM);
+  delay(50);
 }

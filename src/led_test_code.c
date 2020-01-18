@@ -3,6 +3,7 @@
 #define NUM 150
 #define DATA_PIN D6
 
+//Default code to use for hardware testing
 CRGB leds[NUM];
 int n=0;
 
